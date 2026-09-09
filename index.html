@@ -1,755 +1,956 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aviator Live Analyzer</title>
 
-  <title>Aviator Round Analyzer</title>
+<style>
+*{box-sizing:border-box}
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+body{
+  margin:0;
+  padding:20px;
+  font-family:Arial,sans-serif;
+  background:#0d0f12;
+  color:#fff;
+}
 
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #101114;
-      color: #ffffff;
-    }
+.container{
+  max-width:1000px;
+  margin:auto;
+}
 
-    .container {
-      max-width: 1000px;
-      margin: auto;
-    }
+h1{
+  text-align:center;
+  margin-bottom:5px;
+}
 
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
+.subtitle{
+  text-align:center;
+  color:#aaa;
+  margin-bottom:20px;
+}
 
-    .subtitle {
-      text-align: center;
-      color: #aaa;
-      margin-bottom: 25px;
-    }
+.card{
+  background:#191c21;
+  border:1px solid #30343b;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:18px;
+}
 
-    .card {
-      background: #1b1d22;
-      border: 1px solid #30333a;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
+input,select{
+  width:100%;
+  padding:12px;
+  margin:6px 0 12px;
+  background:#0c0e11;
+  color:white;
+  border:1px solid #444;
+  border-radius:8px;
+}
 
-    textarea {
-      width: 100%;
-      min-height: 220px;
-      resize: vertical;
-      background: #0b0c0f;
-      color: #ffffff;
-      border: 1px solid #444;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 14px;
-      outline: none;
-    }
+button{
+  padding:11px 18px;
+  border:0;
+  border-radius:8px;
+  cursor:pointer;
+  margin:4px;
+  font-weight:bold;
+}
 
-    textarea:focus {
-      border-color: #777;
-    }
+.start{
+  background:#18c995;
+  color:#000;
+}
 
-    button {
-      border: none;
-      border-radius: 9px;
-      padding: 11px 18px;
-      margin-top: 12px;
-      margin-right: 8px;
-      cursor: pointer;
-      font-size: 15px;
-    }
+.stop{
+  background:#d64545;
+  color:#fff;
+}
 
-    .analyze {
-      background: #20c997;
-      color: #000;
-      font-weight: bold;
-    }
+.demo{
+  background:#555;
+  color:#fff;
+}
 
-    .demo {
-      background: #444;
-      color: #fff;
-    }
+.status{
+  padding:12px;
+  border-radius:9px;
+  margin-top:10px;
+}
 
-    .clear {
-      background: #8b2635;
-      color: #fff;
-    }
+.online{
+  background:#153a2b;
+  color:#9ff0c8;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
+.offline{
+  background:#3a1c20;
+  color:#ffb8bf;
+}
 
-    .metric {
-      background: #121419;
-      border-radius: 10px;
-      padding: 16px;
-      border: 1px solid #2d3037;
-    }
+.grid{
+  display:grid;
+  grid-template-columns:
+  repeat(auto-fit,minmax(160px,1fr));
+  gap:10px;
+}
 
-    .metric-title {
-      color: #aaa;
-      font-size: 14px;
-    }
+.metric{
+  background:#111317;
+  border-radius:10px;
+  padding:15px;
+}
 
-    .metric-value {
-      font-size: 27px;
-      font-weight: bold;
-      margin-top: 7px;
-    }
+.title{
+  color:#999;
+  font-size:13px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
+.value{
+  font-size:25px;
+  font-weight:bold;
+  margin-top:6px;
+}
 
-    th,
-    td {
-      padding: 11px;
-      border-bottom: 1px solid #30333a;
-      text-align: left;
-    }
+.signal{
+  text-align:center;
+  padding:25px;
+  border-radius:12px;
+  background:#12151a;
+  border:1px solid #383d45;
+}
 
-    th {
-      color: #bbb;
-    }
+.signalText{
+  font-size:32px;
+  font-weight:bold;
+}
 
-    .warning {
-      background: #302614;
-      border: 1px solid #71551f;
-      padding: 15px;
-      border-radius: 10px;
-      color: #e8d5a3;
-      line-height: 1.6;
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+}
 
-    .error {
-      background: #351c20;
-      border: 1px solid #7d303a;
-      padding: 15px;
-      border-radius: 10px;
-      color: #ffb8bf;
-    }
+th,td{
+  padding:9px;
+  border-bottom:1px solid #30343b;
+  text-align:left;
+}
 
-    .success {
-      background: #173126;
-      border: 1px solid #286447;
-      padding: 15px;
-      border-radius: 10px;
-      color: #a9f0ca;
-    }
+.small{
+  color:#999;
+  font-size:13px;
+  line-height:1.6;
+}
 
-    .small {
-      color: #999;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
+.warning{
+  background:#352914;
+  border:1px solid #71551f;
+  padding:14px;
+  border-radius:9px;
+  color:#e8d5a3;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1>✈️ Aviator Round Analyzer</h1>
+<h1>✈️ Aviator Live Analyzer</h1>
 
-  <div class="subtitle">
-    Historical Multiplier Analysis Dashboard
-  </div>
-
-
-  <!-- INPUT -->
-  <div class="card">
-
-    <h2>Round Data</h2>
-
-    <p class="small">
-      Network → rounds → Response থেকে JSON কপি করে এখানে paste করো।
-      কোনো password, cookie, authorization বা authentication token এখানে দেবে না।
-    </p>
-
-    <textarea
-      id="jsonInput"
-      placeholder='এখানে rounds API-এর JSON paste করো...'
-    ></textarea>
-
-    <br>
-
-    <button class="analyze" onclick="analyzeData()">
-      📊 Analyze
-    </button>
-
-    <button class="demo" onclick="loadDemo()">
-      🧪 Demo Data
-    </button>
-
-    <button class="clear" onclick="clearData()">
-      🗑 Clear
-    </button>
-
-  </div>
+<div class="subtitle">
+Live Round Monitor + Statistical Risk Signal
+</div>
 
 
-  <!-- RESULT -->
-  <div id="result"></div>
+<!-- CONNECTION -->
+
+<div class="card">
+
+<h2>🌐 Live Connection</h2>
+
+<label>Game Server</label>
+
+<input
+id="server"
+value="https://gs3-m7.sadim888.net"
+/>
+
+<label>Room ID</label>
+
+<input
+id="room"
+value="00063e451bb851a640f212f6576a0000_bdt"
+/>
+
+<label>Update interval</label>
+
+<select id="interval">
+<option value="3000">3 seconds</option>
+<option value="5000" selected>5 seconds</option>
+<option value="10000">10 seconds</option>
+</select>
+
+<br>
+
+<button class="start" onclick="startLive()">
+🟢 Start Live
+</button>
+
+<button class="stop" onclick="stopLive()">
+🔴 Stop
+</button>
+
+<button class="demo" onclick="demoRound()">
+🧪 Demo
+</button>
+
+<div id="connection" class="status offline">
+Disconnected
+</div>
+
+</div>
+
+
+<!-- SIGNAL -->
+
+<div class="card">
+
+<h2>🚦 Live Signal</h2>
+
+<div class="signal">
+
+<div id="signalText" class="signalText">
+WAITING
+</div>
+
+<p id="signalReason">
+Live data আসার অপেক্ষায়...
+</p>
+
+</div>
+
+</div>
+
+
+<!-- CURRENT -->
+
+<div class="card">
+
+<h2>📡 Current Data</h2>
+
+<div class="grid">
+
+<div class="metric">
+<div class="title">Latest Round</div>
+<div id="latest" class="value">—</div>
+</div>
+
+<div class="metric">
+<div class="title">Rounds Collected</div>
+<div id="count" class="value">0</div>
+</div>
+
+<div class="metric">
+<div class="title">Average</div>
+<div id="average" class="value">—</div>
+</div>
+
+<div class="metric">
+<div class="title">Median</div>
+<div id="median" class="value">—</div>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- DISTRIBUTION -->
+
+<div class="card">
+
+<h2>📊 Live Distribution</h2>
+
+<table>
+
+<tr>
+<th>Range</th>
+<th>Rounds</th>
+<th>Percentage</th>
+</tr>
+
+<tr>
+<td>&lt; 1.50x</td>
+<td id="lowCount">0</td>
+<td id="lowPct">0%</td>
+</tr>
+
+<tr>
+<td>1.50x – 1.99x</td>
+<td id="midCount">0</td>
+<td id="midPct">0%</td>
+</tr>
+
+<tr>
+<td>2.00x – 4.99x</td>
+<td id="normalCount">0</td>
+<td id="normalPct">0%</td>
+</tr>
+
+<tr>
+<td>5x+</td>
+<td id="highCount">0</td>
+<td id="highPct">0%</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<!-- HISTORY -->
+
+<div class="card">
+
+<h2>🕒 Latest Rounds</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>#</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+
+<tbody id="history">
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="card">
+
+<div class="warning">
+
+<strong>⚠️ গুরুত্বপূর্ণ</strong>
+
+<br><br>
+
+এই signal historical/live round distribution-এর
+statistical analysis মাত্র।
+
+<br><br>
+
+Crash game-এর পরের ফলাফল নিশ্চিতভাবে আগে থেকে
+জানা যায় না। তাই এটি guaranteed winning signal নয়।
+
+<br><br>
+
+কোনো password, cookie, authorization header বা
+authentication token এই website-এ বসাবে না।
+
+</div>
+
+</div>
 
 </div>
 
 
 <script>
 
-  /*
-   * ------------------------------------------------
-   * Extract multiplier values
-   * ------------------------------------------------
-   */
+let timer = null;
 
-  function extractMultipliers(json) {
+let rounds = [];
 
-    let rounds = [];
+let lastRoundId = null;
 
-    /*
-     * API response যদি:
-     *
-     * {
-     *   "data": [...]
-     * }
-     *
-     * হয়
-     */
 
-    if (Array.isArray(json.data)) {
-      rounds = json.data;
-    }
+/* ---------------------------------------
+   API URL
+--------------------------------------- */
 
-    /*
-     * সরাসরি array হলেও কাজ করবে
-     */
+function getApiUrl(){
 
-    else if (Array.isArray(json)) {
-      rounds = json;
-    }
+  const server =
+    document.getElementById("server").value.trim();
 
-    /*
-     * কিছু API-তে rounds নামে থাকতে পারে
-     */
+  const room =
+    document.getElementById("room").value.trim();
 
-    else if (Array.isArray(json.rounds)) {
-      rounds = json.rounds;
-    }
+  const query =
+    encodeURIComponent(
+      JSON.stringify({
+        s:["created_at DESC"]
+      })
+    );
 
-    const values = [];
+  return (
+    server +
+    "/table/api/rounds" +
+    "?q=" + query +
+    "&page=1&per_page=100"
+  );
+}
 
-    rounds.forEach(round => {
 
-      if (
-        round &&
-        round.outcomeValues &&
-        round.outcomeValues["0"] !== undefined
-      ) {
+/* ---------------------------------------
+   Fetch live rounds
+--------------------------------------- */
 
-        const value =
-          Number(round.outcomeValues["0"]);
+async function fetchRounds(){
 
-        if (
-          Number.isFinite(value) &&
-          value > 0
-        ) {
-          values.push(value);
+  try{
+
+    const url = getApiUrl();
+
+    const response =
+      await fetch(url,{
+        method:"GET",
+        headers:{
+          "game-identifier":"aviator",
+          "room-id":
+            document.getElementById("room").value.trim()
         }
-      }
-
-    });
-
-    return values;
-  }
+      });
 
 
-  /*
-   * ------------------------------------------------
-   * Median
-   * ------------------------------------------------
-   */
+    if(!response.ok){
 
-  function calculateMedian(values) {
-
-    const sorted =
-      [...values].sort((a, b) => a - b);
-
-    const middle =
-      Math.floor(sorted.length / 2);
-
-    if (sorted.length % 2 === 0) {
-
-      return (
-        sorted[middle - 1] +
-        sorted[middle]
-      ) / 2;
-
-    } else {
-
-      return sorted[middle];
-
-    }
-  }
-
-
-  /*
-   * ------------------------------------------------
-   * Percentage
-   * ------------------------------------------------
-   */
-
-  function percentage(count, total) {
-
-    if (total === 0) {
-      return "0.00%";
-    }
-
-    return (
-      (count / total * 100)
-      .toFixed(2) + "%"
-    );
-  }
-
-
-  /*
-   * ------------------------------------------------
-   * Main analysis
-   * ------------------------------------------------
-   */
-
-  function analyzeData() {
-
-    const input =
-      document.getElementById("jsonInput").value.trim();
-
-    if (!input) {
-
-      showError(
-        "প্রথমে Round JSON এখানে paste করো।"
+      throw new Error(
+        "HTTP " + response.status
       );
 
-      return;
     }
 
 
-    let json;
+    const json =
+      await response.json();
 
-    try {
 
-      json = JSON.parse(input);
+    const data =
+      Array.isArray(json.data)
+      ? json.data
+      : [];
 
-    } catch (error) {
 
-      showError(
-        "JSON সঠিক নয়। Response থেকে সম্পূর্ণ valid JSON copy করো।"
+    const parsed =
+      data
+      .map(item => {
+
+        const multiplier =
+          Number(
+            item?.outcomeValues?.["0"]
+          );
+
+        return {
+
+          id:item.id,
+
+          multiplier:multiplier,
+
+          time:item.startedBetAt
+
+        };
+
+      })
+      .filter(
+        x =>
+          Number.isFinite(x.multiplier)
+          && x.multiplier > 0
       );
 
-      return;
-    }
 
+    if(parsed.length === 0){
 
-    const values =
-      extractMultipliers(json);
-
-
-    if (values.length < 2) {
-
-      showError(
-        "কমপক্ষে 2টি valid multiplier পাওয়া দরকার।"
+      throw new Error(
+        "কোনো round পাওয়া যায়নি"
       );
 
-      return;
     }
 
 
     /*
-     * Basic statistics
+     * Replace current history
      */
 
-    const total =
-      values.length;
+    rounds = parsed;
 
-    const sum =
-      values.reduce(
-        (a, b) => a + b,
-        0
+
+    /*
+     * Detect new round
+     */
+
+    if(
+      lastRoundId !== null &&
+      parsed[0].id !== lastRoundId
+    ){
+
+      console.log(
+        "New round:",
+        parsed[0].multiplier
       );
 
-    const average =
-      sum / total;
-
-    const median =
-      calculateMedian(values);
-
-    const minimum =
-      Math.min(...values);
-
-    const maximum =
-      Math.max(...values);
+    }
 
 
-    /*
-     * Buckets
-     */
-
-    const below150 =
-      values.filter(
-        x => x < 1.50
-      ).length;
-
-    const range150199 =
-      values.filter(
-        x => x >= 1.50 && x < 2.00
-      ).length;
-
-    const range200499 =
-      values.filter(
-        x => x >= 2.00 && x < 5.00
-      ).length;
-
-    const fivePlus =
-      values.filter(
-        x => x >= 5.00
-      ).length;
+    lastRoundId =
+      parsed[0].id;
 
 
-    /*
-     * Recent 20 rounds
-     */
-
-    const recent =
-      values.slice(0, 20);
+    updateDashboard();
 
 
-    /*
-     * Build HTML
-     */
-
-    let html = `
-
-      <div class="card">
-
-        <h2>📊 Analysis Result</h2>
-
-        <p class="success">
-          ${total}টি valid round পাওয়া গেছে।
-        </p>
-
-        <div class="grid">
-
-          <div class="metric">
-            <div class="metric-title">
-              Total Rounds
-            </div>
-
-            <div class="metric-value">
-              ${total}
-            </div>
-          </div>
-
-
-          <div class="metric">
-            <div class="metric-title">
-              Average
-            </div>
-
-            <div class="metric-value">
-              ${average.toFixed(2)}x
-            </div>
-          </div>
-
-
-          <div class="metric">
-            <div class="metric-title">
-              Median
-            </div>
-
-            <div class="metric-value">
-              ${median.toFixed(2)}x
-            </div>
-          </div>
-
-
-          <div class="metric">
-            <div class="metric-title">
-              Minimum
-            </div>
-
-            <div class="metric-value">
-              ${minimum.toFixed(2)}x
-            </div>
-          </div>
-
-
-          <div class="metric">
-            <div class="metric-title">
-              Maximum
-            </div>
-
-            <div class="metric-value">
-              ${maximum.toFixed(2)}x
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <h2>📈 Multiplier Distribution</h2>
-
-        <table>
-
-          <tr>
-            <th>Multiplier Range</th>
-            <th>Rounds</th>
-            <th>Percentage</th>
-          </tr>
-
-          <tr>
-            <td>Below 1.50x</td>
-            <td>${below150}</td>
-            <td>${percentage(below150,total)}</td>
-          </tr>
-
-          <tr>
-            <td>1.50x – 1.99x</td>
-            <td>${range150199}</td>
-            <td>${percentage(range150199,total)}</td>
-          </tr>
-
-          <tr>
-            <td>2.00x – 4.99x</td>
-            <td>${range200499}</td>
-            <td>${percentage(range200499,total)}</td>
-          </tr>
-
-          <tr>
-            <td>5.00x+</td>
-            <td>${fivePlus}</td>
-            <td>${percentage(fivePlus,total)}</td>
-          </tr>
-
-        </table>
-
-      </div>
-
-
-      <div class="card">
-
-        <h2>🕒 Recent Rounds</h2>
-
-        <table>
-
-          <tr>
-            <th>#</th>
-            <th>Multiplier</th>
-          </tr>
-
-    `;
-
-
-    recent.forEach(
-      (value, index) => {
-
-        html += `
-
-          <tr>
-            <td>${index + 1}</td>
-            <td>${value.toFixed(2)}x</td>
-          </tr>
-
-        `;
-
-      }
+    setConnection(
+      true,
+      "🟢 LIVE — Data received"
     );
 
 
-    html += `
+  }catch(error){
 
-        </table>
+    console.error(error);
 
-      </div>
-
-
-      <div class="card">
-
-        <div class="warning">
-
-          <strong>⚠️ গুরুত্বপূর্ণ:</strong>
-
-          <br><br>
-
-          এই dashboard অতীতের round-এর
-          statistics দেখায়।
-
-          <br><br>
-
-          Historical multiplier থেকে
-          পরের round-এর crash point
-          নিশ্চিতভাবে জানা যায় না।
-
-          <br><br>
-
-          তাই এই ফলাফলকে guaranteed
-          betting prediction হিসেবে ধরা যাবে না।
-
-        </div>
-
-      </div>
-
-    `;
-
-
-    document.getElementById(
-      "result"
-    ).innerHTML = html;
+    setConnection(
+      false,
+      "🔴 Connection error: " +
+      error.message
+    );
 
   }
+
+}
+
+
+/* ---------------------------------------
+   Dashboard
+--------------------------------------- */
+
+function updateDashboard(){
+
+  if(rounds.length === 0){
+    return;
+  }
+
+
+  const values =
+    rounds.map(
+      x => x.multiplier
+    );
+
+
+  const total =
+    values.length;
+
+
+  const sum =
+    values.reduce(
+      (a,b)=>a+b,
+      0
+    );
+
+
+  const average =
+    sum / total;
+
+
+  const sorted =
+    [...values].sort(
+      (a,b)=>a-b
+    );
+
+
+  const middle =
+    Math.floor(
+      sorted.length / 2
+    );
+
+
+  const median =
+    sorted.length % 2
+    ? sorted[middle]
+    : (
+      sorted[middle-1]
+      +
+      sorted[middle]
+    ) / 2;
+
+
+  document.getElementById(
+    "latest"
+  ).textContent =
+    values[0].toFixed(2) + "x";
+
+
+  document.getElementById(
+    "count"
+  ).textContent =
+    total;
+
+
+  document.getElementById(
+    "average"
+  ).textContent =
+    average.toFixed(2) + "x";
+
+
+  document.getElementById(
+    "median"
+  ).textContent =
+    median.toFixed(2) + "x";
+
+
+  updateDistribution(values);
+
+  updateHistory(values);
+
+  updateSignal(values);
+
+}
+
+
+/* ---------------------------------------
+   Distribution
+--------------------------------------- */
+
+function updateDistribution(values){
+
+  const total =
+    values.length;
+
+
+  const low =
+    values.filter(
+      x=>x < 1.5
+    ).length;
+
+
+  const mid =
+    values.filter(
+      x=>x >= 1.5 && x < 2
+    ).length;
+
+
+  const normal =
+    values.filter(
+      x=>x >= 2 && x < 5
+    ).length;
+
+
+  const high =
+    values.filter(
+      x=>x >= 5
+    ).length;
+
+
+  document.getElementById(
+    "lowCount"
+  ).textContent = low;
+
+
+  document.getElementById(
+    "midCount"
+  ).textContent = mid;
+
+
+  document.getElementById(
+    "normalCount"
+  ).textContent = normal;
+
+
+  document.getElementById(
+    "highCount"
+  ).textContent = high;
+
+
+  document.getElementById(
+    "lowPct"
+  ).textContent =
+    percent(low,total);
+
+
+  document.getElementById(
+    "midPct"
+  ).textContent =
+    percent(mid,total);
+
+
+  document.getElementById(
+    "normalPct"
+  ).textContent =
+    percent(normal,total);
+
+
+  document.getElementById(
+    "highPct"
+  ).textContent =
+    percent(high,total);
+
+}
+
+
+function percent(n,total){
+
+  return total
+    ? (n/total*100).toFixed(2)+"%"
+    : "0%";
+
+}
+
+
+/* ---------------------------------------
+   Signal
+--------------------------------------- */
+
+function updateSignal(values){
+
+  const sample =
+    values.slice(0,50);
+
+
+  if(sample.length < 10){
+
+    setSignal(
+      "WAITING",
+      "কমপক্ষে 10টি round দরকার।"
+    );
+
+    return;
+
+  }
+
+
+  const low =
+    sample.filter(
+      x=>x < 1.5
+    ).length;
+
+
+  const lowRate =
+    low / sample.length;
 
 
   /*
-   * ------------------------------------------------
-   * Demo data
-   * ------------------------------------------------
+   * Statistical risk indicator.
+   * NOT a guaranteed prediction.
    */
 
-  function loadDemo() {
+  if(lowRate >= 0.50){
 
-    const demoValues = [
-
-      3.66,
-      7.66,
-      1.68,
-      1.71,
-      22.50,
-      1.20,
-      1.39,
-      2.88,
-      1.96,
-      7.03,
-      5.82,
-      3.61,
-      3.12,
-      1.43,
-      11.64,
-      1.05,
-      2.06,
-      1.24,
-      1.01,
-      1.19,
-      8.87,
-      1.67,
-      6.60,
-      5.39,
-      1.17,
-      2.39,
-      1.02,
-      1.54,
-      41.53,
-      21.45,
-      1.90,
-      4.09
-
-    ];
-
-
-    const demoJSON = {
-
-      data: demoValues.map(
-        value => ({
-
-          outcomeValues: {
-            "0": String(value)
-          }
-
-        })
-      )
-
-    };
-
-
-    document.getElementById(
-      "jsonInput"
-    ).value =
-      JSON.stringify(
-        demoJSON,
-        null,
-        2
-      );
-
-
-    analyzeData();
+    setSignal(
+      "🔴 HIGH LOW-MULTIPLIER RISK",
+      "সাম্প্রতিক sample-এ <1.50x ফলাফলের হার " +
+      (lowRate*100).toFixed(1) +
+      "%। এটি historical risk indicator মাত্র।"
+    );
 
   }
 
+  else if(lowRate >= 0.35){
 
-  /*
-   * ------------------------------------------------
-   * Clear
-   * ------------------------------------------------
-   */
-
-  function clearData() {
-
-    document.getElementById(
-      "jsonInput"
-    ).value = "";
-
-    document.getElementById(
-      "result"
-    ).innerHTML = "";
+    setSignal(
+      "🟡 MEDIUM RISK",
+      "সাম্প্রতিক sample-এ <1.50x ফলাফলের হার " +
+      (lowRate*100).toFixed(1) +
+      "%।"
+    );
 
   }
 
+  else{
 
-  /*
-   * ------------------------------------------------
-   * Error
-   * ------------------------------------------------
-   */
-
-  function showError(message) {
-
-    document.getElementById(
-      "result"
-    ).innerHTML = `
-
-      <div class="card">
-
-        <div class="error">
-
-          ❌ ${message}
-
-        </div>
-
-      </div>
-
-    `;
+    setSignal(
+      "🟢 LOWER HISTORICAL RISK",
+      "সাম্প্রতিক sample-এ <1.50x ফলাফলের হার " +
+      (lowRate*100).toFixed(1) +
+      "%।"
+    );
 
   }
+
+}
+
+
+function setSignal(title,reason){
+
+  document.getElementById(
+    "signalText"
+  ).textContent =
+    title;
+
+
+  document.getElementById(
+    "signalReason"
+  ).textContent =
+    reason;
+
+}
+
+
+/* ---------------------------------------
+   History
+--------------------------------------- */
+
+function updateHistory(values){
+
+  const tbody =
+    document.getElementById(
+      "history"
+    );
+
+
+  tbody.innerHTML = "";
+
+
+  values
+    .slice(0,30)
+    .forEach(
+      (value,index)=>{
+
+        const row =
+          document.createElement(
+            "tr"
+          );
+
+
+        row.innerHTML =
+          `
+          <td>${index+1}</td>
+          <td>${value.toFixed(2)}x</td>
+          `;
+
+
+        tbody.appendChild(row);
+
+      }
+    );
+
+}
+
+
+/* ---------------------------------------
+   Start
+--------------------------------------- */
+
+function startLive(){
+
+  stopLive();
+
+  fetchRounds();
+
+  const interval =
+    Number(
+      document.getElementById(
+        "interval"
+      ).value
+    );
+
+
+  timer =
+    setInterval(
+      fetchRounds,
+      interval
+    );
+
+
+  setConnection(
+    true,
+    "🟢 Live monitor started"
+  );
+
+}
+
+
+/* ---------------------------------------
+   Stop
+--------------------------------------- */
+
+function stopLive(){
+
+  if(timer){
+
+    clearInterval(timer);
+
+    timer = null;
+
+  }
+
+  setConnection(
+    false,
+    "⏸ Live monitor stopped"
+  );
+
+}
+
+
+/* ---------------------------------------
+   Connection status
+--------------------------------------- */
+
+function setConnection(ok,text){
+
+  const box =
+    document.getElementById(
+      "connection"
+    );
+
+
+  box.textContent = text;
+
+
+  box.className =
+    ok
+    ? "status online"
+    : "status offline";
+
+}
+
+
+/* ---------------------------------------
+   Demo
+--------------------------------------- */
+
+function demoRound(){
+
+  rounds = [
+
+    3.66,7.66,1.68,1.71,22.5,
+    1.20,1.39,2.88,1.96,7.03,
+    5.82,3.61,3.12,1.43,11.64,
+    1.05,2.06,1.24,1.01,1.19,
+    8.87,1.67,6.60,5.39,1.17,
+    2.39,1.02,1.54,41.53,21.45,
+    1.90,4.09
+
+  ].map(
+    (x,i)=>({
+      id:String(i),
+      multiplier:x
+    })
+  );
+
+
+  updateDashboard();
+
+
+  setConnection(
+    true,
+    "🧪 Demo mode"
+  );
+
+}
+
+
+/* ---------------------------------------
+   Initial demo
+--------------------------------------- */
+
+demoRound();
 
 </script>
 
