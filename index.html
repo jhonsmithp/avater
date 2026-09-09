@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Aviator Round Analyzer</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #101114;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: #1b1d22;
+      border: 1px solid #30333a;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      background: #0b0c0f;
+      color: #ffffff;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #777;
+    }
+
+    button {
+      border: none;
+      border-radius: 9px;
+      padding: 11px 18px;
+      margin-top: 12px;
+      margin-right: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .analyze {
+      background: #20c997;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .demo {
+      background: #444;
+      color: #fff;
+    }
+
+    .clear {
+      background: #8b2635;
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: #121419;
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid #2d3037;
+    }
+
+    .metric-title {
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .metric-value {
+      font-size: 27px;
+      font-weight: bold;
+      margin-top: 7px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      padding: 11px;
+      border-bottom: 1px solid #30333a;
+      text-align: left;
+    }
+
+    th {
+      color: #bbb;
+    }
+
+    .warning {
+      background: #302614;
+      border: 1px solid #71551f;
+      padding: 15px;
+      border-radius: 10px;
+      color: #e8d5a3;
+      line-height: 1.6;
+    }
+
+    .error {
+      background: #351c20;
+      border: 1px solid #7d303a;
+      padding: 15px;
+      border-radius: 10px;
+      color: #ffb8bf;
+    }
+
+    .success {
+      background: #173126;
+      border: 1px solid #286447;
+      padding: 15px;
+      border-radius: 10px;
+      color: #a9f0ca;
+    }
+
+    .small {
+      color: #999;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>✈️ Aviator Round Analyzer</h1>
+
+  <div class="subtitle">
+    Historical Multiplier Analysis Dashboard
+  </div>
+
+
+  <!-- INPUT -->
+  <div class="card">
+
+    <h2>Round Data</h2>
+
+    <p class="small">
+      Network → rounds → Response থেকে JSON কপি করে এখানে paste করো।
+      কোনো password, cookie, authorization বা authentication token এখানে দেবে না।
+    </p>
+
+    <textarea
+      id="jsonInput"
+      placeholder='এখানে rounds API-এর JSON paste করো...'
+    ></textarea>
+
+    <br>
+
+    <button class="analyze" onclick="analyzeData()">
+      📊 Analyze
+    </button>
+
+    <button class="demo" onclick="loadDemo()">
+      🧪 Demo Data
+    </button>
+
+    <button class="clear" onclick="clearData()">
+      🗑 Clear
+    </button>
+
+  </div>
+
+
+  <!-- RESULT -->
+  <div id="result"></div>
+
+</div>
+
+
+<script>
+
+  /*
+   * ------------------------------------------------
+   * Extract multiplier values
+   * ------------------------------------------------
+   */
+
+  function extractMultipliers(json) {
+
+    let rounds = [];
+
+    /*
+     * API response যদি:
+     *
+     * {
+     *   "data": [...]
+     * }
+     *
+     * হয়
+     */
+
+    if (Array.isArray(json.data)) {
+      rounds = json.data;
+    }
+
+    /*
+     * সরাসরি array হলেও কাজ করবে
+     */
+
+    else if (Array.isArray(json)) {
+      rounds = json;
+    }
+
+    /*
+     * কিছু API-তে rounds নামে থাকতে পারে
+     */
+
+    else if (Array.isArray(json.rounds)) {
+      rounds = json.rounds;
+    }
+
+    const values = [];
+
+    rounds.forEach(round => {
+
+      if (
+        round &&
+        round.outcomeValues &&
+        round.outcomeValues["0"] !== undefined
+      ) {
+
+        const value =
+          Number(round.outcomeValues["0"]);
+
+        if (
+          Number.isFinite(value) &&
+          value > 0
+        ) {
+          values.push(value);
+        }
+      }
+
+    });
+
+    return values;
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Median
+   * ------------------------------------------------
+   */
+
+  function calculateMedian(values) {
+
+    const sorted =
+      [...values].sort((a, b) => a - b);
+
+    const middle =
+      Math.floor(sorted.length / 2);
+
+    if (sorted.length % 2 === 0) {
+
+      return (
+        sorted[middle - 1] +
+        sorted[middle]
+      ) / 2;
+
+    } else {
+
+      return sorted[middle];
+
+    }
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Percentage
+   * ------------------------------------------------
+   */
+
+  function percentage(count, total) {
+
+    if (total === 0) {
+      return "0.00%";
+    }
+
+    return (
+      (count / total * 100)
+      .toFixed(2) + "%"
+    );
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Main analysis
+   * ------------------------------------------------
+   */
+
+  function analyzeData() {
+
+    const input =
+      document.getElementById("jsonInput").value.trim();
+
+    if (!input) {
+
+      showError(
+        "প্রথমে Round JSON এখানে paste করো।"
+      );
+
+      return;
+    }
+
+
+    let json;
+
+    try {
+
+      json = JSON.parse(input);
+
+    } catch (error) {
+
+      showError(
+        "JSON সঠিক নয়। Response থেকে সম্পূর্ণ valid JSON copy করো।"
+      );
+
+      return;
+    }
+
+
+    const values =
+      extractMultipliers(json);
+
+
+    if (values.length < 2) {
+
+      showError(
+        "কমপক্ষে 2টি valid multiplier পাওয়া দরকার।"
+      );
+
+      return;
+    }
+
+
+    /*
+     * Basic statistics
+     */
+
+    const total =
+      values.length;
+
+    const sum =
+      values.reduce(
+        (a, b) => a + b,
+        0
+      );
+
+    const average =
+      sum / total;
+
+    const median =
+      calculateMedian(values);
+
+    const minimum =
+      Math.min(...values);
+
+    const maximum =
+      Math.max(...values);
+
+
+    /*
+     * Buckets
+     */
+
+    const below150 =
+      values.filter(
+        x => x < 1.50
+      ).length;
+
+    const range150199 =
+      values.filter(
+        x => x >= 1.50 && x < 2.00
+      ).length;
+
+    const range200499 =
+      values.filter(
+        x => x >= 2.00 && x < 5.00
+      ).length;
+
+    const fivePlus =
+      values.filter(
+        x => x >= 5.00
+      ).length;
+
+
+    /*
+     * Recent 20 rounds
+     */
+
+    const recent =
+      values.slice(0, 20);
+
+
+    /*
+     * Build HTML
+     */
+
+    let html = `
+
+      <div class="card">
+
+        <h2>📊 Analysis Result</h2>
+
+        <p class="success">
+          ${total}টি valid round পাওয়া গেছে।
+        </p>
+
+        <div class="grid">
+
+          <div class="metric">
+            <div class="metric-title">
+              Total Rounds
+            </div>
+
+            <div class="metric-value">
+              ${total}
+            </div>
+          </div>
+
+
+          <div class="metric">
+            <div class="metric-title">
+              Average
+            </div>
+
+            <div class="metric-value">
+              ${average.toFixed(2)}x
+            </div>
+          </div>
+
+
+          <div class="metric">
+            <div class="metric-title">
+              Median
+            </div>
+
+            <div class="metric-value">
+              ${median.toFixed(2)}x
+            </div>
+          </div>
+
+
+          <div class="metric">
+            <div class="metric-title">
+              Minimum
+            </div>
+
+            <div class="metric-value">
+              ${minimum.toFixed(2)}x
+            </div>
+          </div>
+
+
+          <div class="metric">
+            <div class="metric-title">
+              Maximum
+            </div>
+
+            <div class="metric-value">
+              ${maximum.toFixed(2)}x
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>📈 Multiplier Distribution</h2>
+
+        <table>
+
+          <tr>
+            <th>Multiplier Range</th>
+            <th>Rounds</th>
+            <th>Percentage</th>
+          </tr>
+
+          <tr>
+            <td>Below 1.50x</td>
+            <td>${below150}</td>
+            <td>${percentage(below150,total)}</td>
+          </tr>
+
+          <tr>
+            <td>1.50x – 1.99x</td>
+            <td>${range150199}</td>
+            <td>${percentage(range150199,total)}</td>
+          </tr>
+
+          <tr>
+            <td>2.00x – 4.99x</td>
+            <td>${range200499}</td>
+            <td>${percentage(range200499,total)}</td>
+          </tr>
+
+          <tr>
+            <td>5.00x+</td>
+            <td>${fivePlus}</td>
+            <td>${percentage(fivePlus,total)}</td>
+          </tr>
+
+        </table>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>🕒 Recent Rounds</h2>
+
+        <table>
+
+          <tr>
+            <th>#</th>
+            <th>Multiplier</th>
+          </tr>
+
+    `;
+
+
+    recent.forEach(
+      (value, index) => {
+
+        html += `
+
+          <tr>
+            <td>${index + 1}</td>
+            <td>${value.toFixed(2)}x</td>
+          </tr>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+        </table>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="warning">
+
+          <strong>⚠️ গুরুত্বপূর্ণ:</strong>
+
+          <br><br>
+
+          এই dashboard অতীতের round-এর
+          statistics দেখায়।
+
+          <br><br>
+
+          Historical multiplier থেকে
+          পরের round-এর crash point
+          নিশ্চিতভাবে জানা যায় না।
+
+          <br><br>
+
+          তাই এই ফলাফলকে guaranteed
+          betting prediction হিসেবে ধরা যাবে না।
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    document.getElementById(
+      "result"
+    ).innerHTML = html;
+
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Demo data
+   * ------------------------------------------------
+   */
+
+  function loadDemo() {
+
+    const demoValues = [
+
+      3.66,
+      7.66,
+      1.68,
+      1.71,
+      22.50,
+      1.20,
+      1.39,
+      2.88,
+      1.96,
+      7.03,
+      5.82,
+      3.61,
+      3.12,
+      1.43,
+      11.64,
+      1.05,
+      2.06,
+      1.24,
+      1.01,
+      1.19,
+      8.87,
+      1.67,
+      6.60,
+      5.39,
+      1.17,
+      2.39,
+      1.02,
+      1.54,
+      41.53,
+      21.45,
+      1.90,
+      4.09
+
+    ];
+
+
+    const demoJSON = {
+
+      data: demoValues.map(
+        value => ({
+
+          outcomeValues: {
+            "0": String(value)
+          }
+
+        })
+      )
+
+    };
+
+
+    document.getElementById(
+      "jsonInput"
+    ).value =
+      JSON.stringify(
+        demoJSON,
+        null,
+        2
+      );
+
+
+    analyzeData();
+
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Clear
+   * ------------------------------------------------
+   */
+
+  function clearData() {
+
+    document.getElementById(
+      "jsonInput"
+    ).value = "";
+
+    document.getElementById(
+      "result"
+    ).innerHTML = "";
+
+  }
+
+
+  /*
+   * ------------------------------------------------
+   * Error
+   * ------------------------------------------------
+   */
+
+  function showError(message) {
+
+    document.getElementById(
+      "result"
+    ).innerHTML = `
+
+      <div class="card">
+
+        <div class="error">
+
+          ❌ ${message}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+</script>
+
+</body>
+</html>
